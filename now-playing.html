@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style type="text/css">
+        :root {
+            /* configurable options */
+            color-scheme: dark;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-variant: small-caps;
+            --flip-duration: 45s;
+            --cd-spin-duration: 5s;
+            --cd-hide-duration: 1.5s;
+            --color-mute-factor: 0.3;
+            --cover-stretch-threshold: 0.10;
+            --cover-generator-str-len: 5;
+            --cover-generator-char-scale-factor: 0.7;
+            --bg-static-color: Canvas;
+            --bg-fog-enabled: true;
+            --bg-fog-highlight-color: #310c1d;
+            --bg-fog-midtone-color: #c03f26;
+            --bg-fog-lowlight-color: #3e1010;
+            --bg-fog-base-color: #a02424;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            overflow-wrap: anywhere
+        }
+
+        body {
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-static-color);
+        }
+
+        li {
+            list-style: none;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+
+        i.plain,
+        i.paren,
+        i.bracket,
+        i.brace,
+        i.angle {
+            font-style: normal;
+        }
+
+        i.paren,
+        i.bracket,
+        i.brace,
+        i.angle {
+            opacity: var(--color-mute-factor);
+        }
+
+        /* wrapper and flip animations */
+
+        .container {
+            margin: auto;
+            height: 100%;
+            width: 94%;
+            margin-left: 3%;
+            display: flex;
+            position: absolute;
+            justify-content: left;
+            align-items: center;
+            flex-direction: row;
+        }
+
+        .container-rtl {
+            justify-content: right;
+            text-align: right;
+            flex-direction: row-reverse;
+        }
+
+        .container-rtl .country {
+            margin-left: 0.5em;
+        }
+
+        .container-ltr {
+            opacity: 1;
+            animation-name: flipStart;
+            animation-duration: var(--flip-duration);
+            animation-iteration-count: infinite;
+        }
+
+        .container-rtl {
+            opacity: 0;
+            animation-name: flipEnd;
+            animation-duration: var(--flip-duration);
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes flipStart {
+
+            0%,
+            45%,
+            100% {
+                opacity: 1;
+                transform: rotateY(0);
+            }
+
+            50%,
+            95% {
+                opacity: 0;
+                transform: rotateY(180deg);
+            }
+        }
+
+        @keyframes flipEnd {
+
+            0%,
+            45%,
+            100% {
+                opacity: 0;
+                transform: rotateY(180deg);
+            }
+
+            50%,
+            95% {
+                opacity: 1;
+                transform: rotateY(0);
+            }
+        }
+
+
+        /* artwork */
+
+        .side {
+            width: 120%;
+        }
+
+        .side img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .artwork-wrap {
+            padding-left: 30%;
+            padding-right: 1em;
+        }
+
+        .container-rtl .artwork-wrap {
+            padding-right: 30%;
+            padding-left: 1em;
+        }
+
+        .artwork {
+            box-shadow: 0 0 0.1em 0.1em ButtonBorder;
+            margin-top: -100%;
+            z-index: 20;
+            position: relative;
+            object-fit: contain;
+            aspect-ratio: 1 / 1;
+            background-color: ButtonBorder;
+        }
+
+        .side img.stretched {
+            object-fit: fill;
+        }
+
+        .cdbg {
+            object-fit: cover;
+            margin-top: -100%;
+            opacity: 20%;
+            z-index: 11;
+        }
+
+        .cd,
+        .cdbg {
+            animation: spin var(--cd-spin-duration) linear infinite;
+            animation-play-state: paused;
+            z-index: 10;
+            object-fit: cover;
+            clip-path: circle(50%);
+            aspect-ratio: 1 / 1;
+        }
+
+        .playing .cd,
+        .playing .cdbg {
+            animation-play-state: running;
+        }
+
+        .paused .cd,
+        .paused .cdbg {
+            animation-play-state: paused;
+        }
+
+        .cdborder {
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            background-color: ButtonBorder;
+            clip-path: circle(50%);
+            padding: 0.1em;
+            box-sizing: border-box;
+        }
+
+        .stopped .container-ltr .cdborder {
+            animation: var(--cd-hide-duration) 1 hide-ltr ease;
+            animation-fill-mode: forwards;
+        }
+
+        .playing .container-ltr .cdborder {
+            animation: var(--cd-hide-duration) 1 show-ltr ease;
+            animation-fill-mode: forwards;
+        }
+
+        .stopped .container-rtl .cdborder {
+            animation: var(--cd-hide-duration) 1 hide-rtl ease;
+            animation-fill-mode: forwards;
+        }
+
+        .playing .container-rtl .cdborder {
+            animation: var(--cd-hide-duration) 1 show-rtl ease;
+            animation-fill-mode: forwards;
+        }
+
+        .paused .container-ltr .cdborder {
+            margin-left: -40%;
+        }
+
+        .paused .container-rtl .cdborder {
+            margin-left: 40%;
+        }
+
+        @keyframes hide-ltr {
+            from {
+                margin-left: -40%;
+            }
+
+            to {
+                margin-left: 0;
+            }
+        }
+
+        @keyframes show-ltr {
+            from {
+                margin-left: initial;
+            }
+
+            to {
+                margin-left: -40%;
+            }
+        }
+
+        @keyframes hide-rtl {
+            from {
+                margin-left: 40%;
+            }
+
+            to {
+                margin-left: 0;
+            }
+        }
+
+        @keyframes show-rtl {
+            from {
+                margin-left: initial;
+            }
+
+            to {
+                margin-left: 40%;
+            }
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* metadata */
+
+        .meta-container {
+            width: 80%;
+            padding-left: 1em;
+            padding-right: 1em;
+        }
+
+        /* metadata: artist, albim, title */
+
+        .artist {
+            font-size: x-large;
+            font-weight: bold;
+        }
+
+        .album {
+            display: block;
+            font-size: large;
+            font-weight: 500;
+            margin-bottom: 1em;
+        }
+
+        .album::after {
+            content: '»';
+        }
+
+        .album::before {
+            content: '«';
+        }
+
+        .subtitle {
+            display: block;
+            font-size: large;
+            font-weight: 100;
+            line-height: 1.1em;
+        }
+
+        .title {
+            display: block;
+            font-size: xx-large;
+            font-weight: 500;
+            line-height: 1.1em;
+            margin-bottom: 0.5em;
+        }
+
+        /* metadata: detail wrapper */
+
+        .meta-detail {
+            font-weight: 500;
+            font-size: small;
+            letter-spacing: 0.15em;
+        }
+
+        .meta-detail::before {
+            content: attr(data-prefix);
+            font-weight: 100;
+            letter-spacing: 0.3em;
+        }
+
+        /* metadata: country, year, keywords */
+
+        .meta {
+            letter-spacing: 0.3em;
+            margin-top: 2em;
+        }
+
+        .country {
+            height: 1.2em;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+        }
+
+        .year {
+            font-weight: bold;
+            margin: 0 1em;
+        }
+
+        /* metadata: technical details */
+
+        .technical {
+            display: inline-block;
+            width: fit-content;
+            margin-top: 1em;
+            font-size: small;
+        }
+
+        .technical span {
+            display: inline-block;
+            background-color: rgb(from ButtonBorder r g b / var(--color-mute-factor));
+            padding: 0.5em 0.5em 0.5em 0.75em;
+            border-radius: 0.5em;
+            margin-bottom: 0.5em;
+        }
+
+        /* metadata: time, total time */
+
+        .technical span::after {
+            content: attr(data-suffix);
+            opacity: calc(2*var(--color-mute-factor));
+        }
+
+        .technical span::before {
+            content: attr(data-prefix);
+            opacity: calc(2*var(--color-mute-factor));
+        }
+
+        .time-container {
+            display: block;
+            margin-top: 1em;
+            font-size: 3em;
+        }
+
+        .total {
+            opacity: var(--color-mute-factor);
+        }
+
+        .total::before {
+            content: '/';
+            alignment-baseline: central;
+        }
+
+        /* playback status */
+
+        .status {
+            display: inline-block;
+            background-color: rgb(from ButtonBorder r g b / var(--color-mute-factor));
+            padding: 0.5em 0.5em 0.5em 0.75em;
+            border-radius: 0.5em;
+            cursor: pointer;
+            margin-top: 0.5em;
+        }
+
+        .playing .status {
+            background-color: rgba(0, 255, 0, var(--color-mute-factor));
+        }
+
+        .playing .status::before {
+            content: '▶ ';
+        }
+
+        .stopped .status {
+            background-color: rgba(255, 0, 0, var(--color-mute-factor));
+        }
+
+        .stopped .status::before {
+            content: '⏹ ';
+        }
+
+        .stopped .status-track {
+            display: none;
+        }
+
+        .paused .status {
+            background-color: rgb(from ButtonBorder r g b / var(--color-mute-factor));
+            animation: pause 0.6s infinite linear;
+            animation-direction: alternate;
+        }
+
+        .paused .status::before {
+            content: '⏸ ';
+        }
+
+        @keyframes pause {
+            to {
+                background-color: rgba(0, 255, 0, var(--color-mute-factor));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="side">
+            <div class="artwork-wrap">
+                <div class="cdborder">
+                    <img src="cd.png" class="cd" />
+                    <img src="cd.png" class="cdbg" />
+                </div>
+                <img src="cd.png" class="artwork" />
+            </div>
+        </div>
+        <ul class="meta-container">
+            <li>
+                <span class="artist" data-format="[%prefix% ][%album artist%]">The Album Artist</span>
+            </li>
+            <li>
+                <span class="album" data-format="[%album%]">Album Name</span>
+            </li>
+            <li>
+                <span class="subtitle" data-format="[%subtitle%:]">Section title:</span>
+                <span class="title" data-format="%title%[' ('%track comment%')']">The maginificent track title</span>
+            </li>
+            <li class="meta-detail performer"
+                data-format="[$if($stricmp(%track artist%,%album artist%),,%track artist%)]"
+                data-prefix="perfomed by: ">Performer Name</li>
+            <li class="meta-detail composer" data-format="[%composer%]" data-prefix="composed by: ">Composer Name</li>
+            <li class="meta-detail conductor" data-format="[%conductor%]" data-prefix="conducted by: ">Conductor Name
+            </li>
+            <li class="meta-detail venue" data-format="[%venue%]" data-prefix="venue: ">Venue</li>
+            <li class="meta-detail performance_date" data-format="[%exact_date%]" data-prefix="performance date: ">
+                Performance date</li>
+            <li class="meta-detail url" data-format="[$if(
+                    $and(
+                        $or(
+                            $stricmp($left(%path%,8),'https://'),
+                            $stricmp($left(%path%,7),'http://')
+                        ),
+                        $not($stricmp(%filename_ext%,'stream.flac.ogg'))
+                    ),
+                    %path%,
+                )]" data-prefix="stream URL: "></li>
+            <li class="meta-detail url" data-format="[%url%]" data-prefix="URL: ">url</li>
+            <li class="meta">
+                <img src="flags/EU.svg" class="country">
+                <span class="year" data-format="[%date%]">2026</span>
+                <span class="keywords" data-format="[$meta_sep(keywords,' ᛫ ')][$if(%keywords%,' ᛫ ',)%genre%]">some ᛫
+                    keywords</span><br>
+                <span class="technical">
+                    <span data-format="[%codec_long%]">Codec</span>
+                    <span data-format="[%bitrate%]" data-suffix="kb/s">Bitrate</span>
+                    <span data-format="[$puts(sr,$info(samplerate))
+                        $puts(sr1000,$div($get(sr),1000))
+                        $puts(r,$div($sub($get(sr),$mul($get(sr1000),1000)),100))
+                        $get(sr1000)$ifequal($get(r),0,,.$get(r))]" data-suffix="kHz">Samplerate</span>
+                    <span data-format="[%__bitspersample%]" data-suffix="bit">Bit depth</span>
+                    <span data-format="$channels()">Channels</span>
+                    <span data-format="[%album dynamic range%]" data-prefix="dr">DR</span>
+                </span>
+                <span class="time-container">
+                    <span class="time" data-format="[%playback_time%]">00:00</span><span class="total"
+                        data-format="[%length%]">00:00</span>
+                </span>
+                <span class="status button" aria-roledescription="toggle play / pause" role="button" tabindex="2">
+                    <span class="status-value">stopped</span>
+                    <span class="status-track" data-format="$if(
+                            $or(
+                                $stricmp($left(%path%,8),'https://'),
+                                $stricmp($left(%path%,7),'http://')
+                            ),
+                            $if($stricmp(%filename_ext%,'stream.flac.ogg'),'remote','stream'),)
+                            [ track %track number%[ of $num(%totaltracks%,1)]]"></span>
+                </span>
+            </li>
+        </ul>
+    </div>
+    <script type="text/javascript">
+        class ImageBgGenerator {
+            getBg(img) {
+                const canvas = document.createElement('canvas');
+                canvas.setAttribute('width', 200);
+                canvas.setAttribute('height', 200);
+
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                context.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, canvas.width, canvas.height);
+
+                let colors1 = [];
+                let colors2 = [];
+                let dir = '90deg';
+
+                if (img.naturalHeight > img.naturalWidth) {
+                    for (let i = 10; i < canvas.height - 10; i++) {
+                        for (let j = 3; j < 10; j++) {
+                            colors1.push(context.getImageData(j, i, 1, 1).data);
+                            colors2.push(context.getImageData(canvas.width - 1 - j, i, 1, 1).data);
+                        }
+                    }
+                } else {
+                    dir = '180deg';
+                    for (let i = 10; i < canvas.width - 10; i++) {
+                        for (let j = 3; j < 10; j++) {
+                            colors1.push(context.getImageData(i, j, 1, 1).data);
+                            colors2.push(context.getImageData(i, canvas.height - 1 - j, 1, 1).data);
+                        }
+                    }
+                }
+
+                const color1 = this._findMostFrequentColor(colors1, (a, b) => this._isCloserThan(a, b, 10));
+                const color2 = this._findMostFrequentColor(colors2, (a, b) => this._isCloserThan(a, b, 10));
+
+                return `linear-gradient(
+                    ${dir},
+                    rgba(${color1[0]}, ${color1[1]}, ${color1[2]}, 1) 51%,
+                    rgba(${color2[0]}, ${color2[1]}, ${color2[2]}, 1) 50%
+                )`;
+            }
+
+            _isCloserThan(arr1, arr2, N) {
+                const threshold = Math.max(0, parseFloat(N));
+
+                let distanceSq = 0;
+
+                for (let i = 0; i < 3; i++) {
+                    const diff = arr1[i] - arr2[i];
+                    distanceSq += diff * diff;
+                }
+
+                return Math.sqrt(distanceSq) < threshold;
+            }
+
+            _findMostFrequentColor(colorsList, areEqualFn) {
+                if (!colorsList || colorsList.length === 0) {
+                    return null;
+                }
+
+                const groups = [];
+
+                for (const color of colorsList) {
+                    let foundGroupIndex = -1;
+
+                    for (let i = 0; i < groups.length && foundGroupIndex === -1; i++) {
+                        if (areEqualFn(groups[i].representative, color)) {
+                            foundGroupIndex = i;
+                            break;
+                        }
+                    }
+
+                    const key = Array.from(color).join(',');
+                    if (foundGroupIndex !== -1) {
+                        groups[foundGroupIndex].count++;
+                        groups[foundGroupIndex].colorFrequencies.set(
+                            key,
+                            groups[foundGroupIndex].colorFrequencies.get(key) + 1
+                        );
+                    } else {
+                        groups.push({
+                            representative: color,
+                            count: 1,
+                            colorFrequencies: new Map([[key, 1]])
+                        });
+                    }
+                }
+
+                let mostFrequentGroup = groups[0];
+                for (let i = 1; i < groups.length; i++) {
+                    if (groups[i].count > mostFrequentGroup.count) {
+                        mostFrequentGroup = groups[i];
+                    }
+                }
+
+                let mostFrequentColor = undefined;
+                let maxCount = 0;
+                for (const [key, count] of mostFrequentGroup.colorFrequencies.entries()) {
+                    if (count > maxCount) {
+                        mostFrequentColor = key;
+                        maxCount = count;
+                    }
+                }
+
+                return new Uint8ClampedArray(mostFrequentColor.split(',').map(Number));
+            }
+        }
+
+        class ArtworkGenerator {
+            constructor(scaleFactorPerChar) {
+                this.scaleFactorPerChar = scaleFactorPerChar
+            }
+
+            generate(rawInputString, maxChars) {
+                const inputString = rawInputString.replace(' ', '').substring(0, maxChars);
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 1000;
+                canvas.height = 1000;
+
+                const ctx = canvas.getContext('2d');
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const bgHue = this._stringToHue(rawInputString);
+
+                ctx.fillStyle = `hsl(${bgHue}deg 80% 20%)`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const characters = inputString.split('');
+
+                if (characters.length === 0) {
+                    return canvas.toDataURL('image/png');
+                }
+
+                const fontFamily = 'Verdana';
+                const baseFontSize = 1300;
+                let fontSize = baseFontSize;
+
+                const coin = () => Math.sign(Math.random() - 0.5);
+
+                characters.forEach((char, index) => {
+                    if (index > 0) {
+                        fontSize = Math.floor(fontSize * this.scaleFactorPerChar);
+                    }
+
+                    const opacity = 1 - 0.5 * (inputString.length - index) / (inputString.length);
+
+                    ctx.fillStyle = `hsl(${(bgHue + 180) % 360}deg 100% 60% / ${100 * opacity}%)`;
+                    ctx.font = `bold ${fontSize}px ${fontFamily}`;
+
+                    const m = ctx.measureText(char);
+                    const h = m.fontBoundingBoxAscent - m.fontBoundingBoxDescent;
+
+                    const x = 500 + 250 * ((index - 1) % 2 ? -1 : 1) + Math.round(Math.random() * coin() * 170);
+                    const y = 500 + 250 * ((index - 1) % 3 ? 1 : -1) + Math.round(Math.random() * coin() * 170);
+                    ctx.fillText(char, index === 0 ? 500 : x, index === 0 ? 600 : y);
+                });
+
+                return canvas.toDataURL('image/png');
+            }
+
+            _stringToHue(str) {
+                let hash = 0x811c9dc6;
+                for (let i = 0; i < str.length; i++) {
+                    hash ^= str.charCodeAt(i);
+                    hash = Math.imul(hash, 0x01000193);
+                }
+                return ((hash >>> 0) % 360);
+            }
+        }
+
+        class Parentheses {
+            mark(str) {
+                const pairs = [
+                    { open: '(', close: ')', className: "paren" },
+                    { open: '[', close: ']', className: "bracket" },
+                    { open: '{', close: '}', className: "brace" },
+                    { open: '<', close: '>', className: "angle" }
+                ];
+
+                let result = '';
+                let i = 0;
+
+                while (i < str.length) {
+                    const matchingPair = pairs.find(pair => str[i] === pair.open);
+
+                    if (matchingPair) {
+                        const start = i;
+                        let depth = 1;
+
+                        for (let j = i + 1; j < str.length && depth > 0; j++) {
+                            if (str[j] === matchingPair.open) depth++;
+                            else if (str[j] === matchingPair.close) depth--;
+
+                            if (depth === 0) {
+                                result += `<i class="${matchingPair.className}">${this._escapeHtml(str.substring(start, j + 1))}</i>`;
+                                i = j + 1;
+                                break;
+                            }
+                        }
+
+                        if (i === start) {
+                            result += `<i class="plain">${this._escapeHtml(matchingPair.open)}</i>`;
+                            i++;
+                        }
+                    } else {
+                        const start = i;
+
+                        let j = i;
+                        while (j < str.length && !pairs.some(pair => str[j] === pair.open)) {
+                            j++;
+                        }
+
+                        result += `<i class="plain">${this._escapeHtml(str.substring(start, j))}</i>`;
+                        i = j;
+                    }
+                }
+
+                return result;
+            }
+
+            _escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+        }
+
+        class NowPlayingScreen {
+            constructor(plugin) {
+                this.plugin = plugin
+                this.coverStretchThreshold = this._getNumericConfigParam('cover-stretch-threshold');
+                this.coverGenertorStrLen = this._getNumericConfigParam('cover-generator-str-len');
+
+                this.parens = new Parentheses();
+                this.bgGenerator = new ImageBgGenerator();
+                this.artworkGenerator = new ArtworkGenerator(
+                    this._getNumericConfigParam('cover-generator-char-scale-factor')
+                );
+
+                this.bodyEl = document.querySelector('body');
+                this.timeEls = document.querySelectorAll('.time');
+                this.flagEls = document.querySelectorAll('img.country');
+                this.formatEls = document.querySelectorAll('[data-format]');
+                this.artworkEls = document.querySelectorAll('img.artwork');
+                this.cdEls = document.querySelectorAll('img.cd');
+                this.statusEls = document.querySelectorAll('.status');
+                this.statusValueEls = document.querySelectorAll('.status .status-value');
+
+                this.artworkEls[0].addEventListener('load', this.setArtworkBg.bind(this));
+                this.statusEls.forEach(e => e.addEventListener('click', () => this.plugin.togglePause()));
+
+                this.refresh('init');
+                this.status();
+                this.setArtwork();
+            }
+
+            refresh() {
+                const value = this._format('[%country%]').toUpperCase();
+                const country = value === 'UK' ? 'GB' : value;
+                this.flagEls.forEach(e => this._setOrHide(e, `flags/${country}.svg`, 'src', country))
+
+                this.formatEls.forEach(e => {
+                    const value = this._format(e.dataset.format);
+                    this._setOrHide(e, value, 'innerHTML', value, t => this.parens.mark(t));
+                });
+            }
+
+            setArtwork() {
+                const img = this._artwork('front');
+
+                if (this.artworkEls[0].src !== img) {
+                    this.artworkEls.forEach(e => {
+                        e.src = img;
+                        e.classList.remove('stretched');
+                    });
+                };
+
+                const cd = this._artwork('disc', img);
+
+                if (this.cdEls[0].src !== cd) {
+                    this.cdEls.forEach(e => e.src = cd);
+                }
+
+            }
+
+            setArtworkBg(e) {
+                const img = e.currentTarget;
+
+                // stretch if difference is reasonably small
+                const proportions = img.naturalWidth / img.naturalHeight;
+                if (proportions > 1-this.coverStretchThreshold && proportions < 1+this.coverStretchThreshold) {
+                    this.artworkEls.forEach(e => e.classList.add('stretched'));
+                    return;
+                }
+
+                // generate matching background
+                const gradient = this.bgGenerator.getBg(img);
+                this.artworkEls.forEach(e => e.style.background = gradient);
+            }
+
+            setTime(s) {
+                this.timeEls.forEach(e =>
+                    this._setOrHide(
+                        e,
+                        this._format(`[${e.dataset.format}]`)
+                    )
+                );
+
+                const progress = this._progressBar(
+                    s,
+                    this._format('%length_seconds%') || 0,
+                    'rgba(0, 255, 0, var(--color-mute-factor))',
+                    'rgb(from ButtonBorder r g b / var(--color-mute-factor))'
+                )
+                this.statusEls.forEach(e => e.style.background = progress);
+            }
+
+            status(status) {
+                status = status || this._getCurrentStatus()
+
+                this.statusValueEls.forEach(e => e.textContent = status);
+                this.statusEls.forEach(e => e.classList.remove(...e.classList));
+                this.statusEls.forEach(e => e.classList.add('status', ...status.split(' ')));
+
+                this.bodyEl.classList.remove(...this.bodyEl.classList);
+                this.bodyEl.classList.add(...status.split(' '));
+                if (status === 'paused') {
+                    this.bodyEl.classList.add('playing');
+                }
+            }
+
+            _getNumericConfigParam(name) {
+                return parseFloat(
+                    window.getComputedStyle(document.documentElement).getPropertyValue(`--${name}`)
+                )
+            }
+
+            _getCurrentStatus() {
+                if (this.plugin.isPlaying && this.plugin.isPaused) {
+                    return 'paused';
+                }
+
+                if (this.plugin.isPlaying) {
+                    return 'playing';
+                }
+
+                return 'stopped';
+            }
+
+            _setOrHide(e, value, prop, testValue, preprocess) {
+                preprocess = preprocess || ((t) => t);
+                testValue = testValue === undefined ? value : testValue;
+                prop = prop || 'textContent'
+
+                if (testValue === '') {
+                    e.classList.add('hide');
+                } else {
+                    e[prop] = preprocess(value);
+                    e.classList.remove('hide');
+                }
+            }
+
+            _format(t) {
+                const text = this.plugin.getFormattedText(t);
+
+                return text === 'NEIN' ? '' : text;
+            }
+
+            _artwork(type, defaultCover) {
+                const artwork = this.plugin.getArtwork(type);
+                if (artwork.length > 0) {
+                    return artwork;
+                }
+
+                if (defaultCover) {
+                    return defaultCover;
+                }
+
+                const rawInputString = (
+                    this._format('[%album artist%]')
+                    || this._format('[%title%]')
+                    || this._format('[%filename%]')
+                );
+
+                return this.artworkGenerator.generate(rawInputString, this.coverGenertorStrLen);
+            }
+
+            _progressBar(current, total, startColor, endColor) {
+                total = parseFloat(total);
+                if (!total) {
+                    return startColor;
+                }
+
+                const ratio = current / total;
+                return `linear-gradient(to right,
+                    ${startColor} calc(${100 * ratio}% + 1px),
+                    ${endColor} calc(${100 * ratio}%)
+                )`;
+            }
+        }
+
+        const getopt = x => window.getComputedStyle(document.documentElement).getPropertyValue(x);
+
+        if (getopt(`--bg-fog-enabled`) === 'true') {
+            const loadScript = function(src, onload) {
+                let script = document.createElement('script');
+                script.onload = onload;
+                script.src = src;
+                script.async = false;
+                document.head.appendChild(script);
+            }
+
+            loadScript('three.min.js', () => {
+                loadScript('vanta.fog.min.js', () => {
+                    VANTA.FOG({
+                        el: "body",
+                        mouseControls: false,
+                        touchControls: false,
+                        gyroControls: false,
+                        minHeight: 200.00,
+                        minWidth: 200.00,
+                        highlightColor: getopt(`--bg-fog-highlight-color`),
+                        midtoneColor: getopt(`--bg-fog-midtone-color`),
+                        lowlightColor: getopt(`--bg-fog-lowlight-color`),
+                        baseColor: getopt(`--bg-fog-base-color`),
+                    });
+                })
+            });
+        }
+
+        const containerLtr = document.querySelector('.container');
+        const containerRtl = containerLtr.cloneNode(true);
+        containerLtr.parentElement.appendChild(containerRtl);
+        containerLtr.classList.add('container-ltr')
+        containerRtl.classList.add('container-rtl')
+
+        const a = new NowPlayingScreen(chrome.webview.hostObjects.sync.foo_uie_webview);
+
+        function onPlaybackEdited() { a.refresh() }
+        function onPlaybackDynamicTrackInfo() { a.refresh(); a.setArtwork() }
+        function onPlaybackDynamicInfo() { a.refresh() }
+        function onPlaybackStarting(command, paused) { a.status(paused ? 'paused' : 'playing') }
+        function onPlaybackStop(reason) { a.status(`stopped by ${reason.toLowerCase()}`) }
+        function onPlaybackPause(paused) { a.status(paused ? 'paused' : 'playing') }
+        function onPlaybackStarted() { a.refresh() }
+        function onPlaybackNewTrack() { a.refresh(); a.setArtwork() }
+        function onPlaybackTime(s) { a.setTime(s) }
+        function onPlaybackSeek(s) { a.setTime(s) }
+    </script>
+</body>
+
+</html>
