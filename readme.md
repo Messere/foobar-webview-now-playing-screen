@@ -29,8 +29,10 @@ this won't work if you have default artwork set in foobar2000).
 * Custom CD artwork is supported; if no CD artwork is availabe, substitute is
 generated based on main artwork (again - this works only if foobar2000 is not
 confugured to provide its own fallback artwork).
-* As it was meant as a non-interactive big screen display, there is only one
-interactive element allowing to toggle between play and pause on mouse click.
+* As it was meant as a non-interactive big screen display, there are only two
+interactive element: playback button toggles between pause and play on click and
+time display toggles between elapsed and remaining time on click (but only if
+remaining time is known).
 * Simple customization: edit the template and add your own elements. A dedicated
 attribute `data-format` accepts foobar2000 formatting script and displays/updates
 it automatically. For example:
@@ -51,7 +53,8 @@ A section of configurable parameters is included at the top of the template file
     color-scheme: dark;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-variant: small-caps;
-    --alignment: flip;
+    --alignment: flip; /* flip, left, or right */
+    --default-time-display: elapsed; /* elapsed or remaining */
     --flip-duration: 45s;
     --cd-spin-duration: 5s;
     --cd-hide-duration: 1.5s;
@@ -74,6 +77,7 @@ A section of configurable parameters is included at the top of the template file
 | font-family                         | see [font-family CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-family)    |
 | font-variant                        | see [font-variant CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-variant)  |
 | --alignment                         | `left` for cover on left, meta on right, `right` for reverse, `flip` for animation between `left` and `right`        |
+| --default-time-display              | `elapsed` or `remaining` (note that `remaining` falls back to `elapsed` if total time is unknown, i.e. for streaming)  |
 | --flip-duration                     | time between information on screen flip from side to side                                                            |
 | --cd-spin-duration                  | the larger the value, the slower CD art spins while playing                                                          |
 | --cd-hide-duration                  | how quickly CD art shows/hides when starting/stopping playback                                                       |

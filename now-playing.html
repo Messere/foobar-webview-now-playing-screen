@@ -9,7 +9,8 @@
             color-scheme: dark;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-variant: small-caps;
-            --alignment: flip; /* or left, or right */
+            --alignment: flip; /* flip, left, or right */
+            --default-time-display: elapsed; /* elapsed or remaining */
             --flip-duration: 45s;
             --cd-spin-duration: 5s;
             --cd-hide-duration: 1.5s;
@@ -404,6 +405,7 @@
             display: block;
             margin-top: 1em;
             font-size: 3em;
+            cursor: pointer;
         }
 
         .total {
@@ -523,7 +525,7 @@
                     <span data-format="[%album dynamic range%]" data-prefix="dr">DR</span>
                 </span>
                 <span class="time-container">
-                    <span class="time" data-format="[%playback_time%]">00:00</span><span class="total"
+                    <span class="time">00:00</span><span class="total"
                         data-format="[%length%]">00:00</span>
                 </span>
                 <span class="status button" aria-roledescription="toggle play / pause" role="button" tabindex="2">
@@ -774,13 +776,13 @@
         class NowPlayingScreen {
             constructor(plugin) {
                 this.plugin = plugin
-                this.coverStretchThreshold = this._getNumericConfigParam('cover-stretch-threshold');
-                this.coverGenertorStrLen = this._getNumericConfigParam('cover-generator-str-len');
+                this.coverStretchThreshold = parseFloat(getopt('--cover-stretch-threshold'));
+                this.coverGenertorStrLen = parseFloat(getopt('--cover-generator-str-len'));
 
                 this.parens = new Parentheses();
                 this.bgGenerator = new ImageBgGenerator();
                 this.artworkGenerator = new ArtworkGenerator(
-                    this._getNumericConfigParam('cover-generator-char-scale-factor')
+                    parseFloat(getopt('--cover-generator-char-scale-factor'))
                 );
 
                 this.bodyEl = document.querySelector('body');
@@ -795,7 +797,17 @@
                 this.artworkEls[0].addEventListener('load', this.setArtworkBg.bind(this));
                 this.statusEls.forEach(e => e.addEventListener('click', () => this.plugin.togglePause()));
 
+                this.timeFormats = {
+                    elapsed: '[%playback_time%]',
+                    remaining: '[$if(%playback_time_remaining%,-%playback_time_remaining%,%playback_time%)]',
+                };
+                this.currentTimeFormat = getopt('--default-time-display');
+                document.querySelectorAll('.time-container').forEach(
+                    e => e.addEventListener('click', () => this.toggleTimeFormat())
+                )
+
                 this.refresh();
+                this.setTime();
                 this.status();
                 this.setArtwork();
             }
@@ -847,21 +859,25 @@
                 this.artworkEls.forEach(e => e.style.background = gradient);
             }
 
-            setTime(s) {
-                this.timeEls.forEach(e =>
-                    this._setOrHide(
-                        e,
-                        this._format(`[${e.dataset.format}]`)
-                    )
-                );
+            setTime() {
+                const time = this._format(this.timeFormats[this.currentTimeFormat]);
+                this.timeEls.forEach(e => this._setOrHide(e, time));
 
                 const progress = this._progressBar(
-                    s,
+                    this._format('%playback_time_seconds%'),
                     this._format('%length_seconds%') || 0,
                     'rgba(0, 255, 0, var(--color-mute-factor))',
                     'rgb(from ButtonBorder r g b / var(--color-mute-factor))'
                 )
                 this.statusEls.forEach(e => e.style.background = progress);
+            }
+
+            toggleTimeFormat() {
+                if (this.currentTimeFormat === 'elapsed') {
+                    this.currentTimeFormat = 'remaining';
+                } else {
+                    this.currentTimeFormat = 'elapsed';
+                }
             }
 
             status(status) {
@@ -878,12 +894,6 @@
                 if (status === 'paused') {
                     this.bodyEl.classList.add('playing');
                 }
-            }
-
-            _getNumericConfigParam(name) {
-                return parseFloat(
-                    window.getComputedStyle(document.documentElement).getPropertyValue(`--${name}`)
-                )
             }
 
             _getCurrentStatus() {
