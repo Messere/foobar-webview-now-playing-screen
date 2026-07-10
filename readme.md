@@ -82,11 +82,20 @@ A section of configurable parameters is included on top of the template file in
 | --bg-for-enabled | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions) |
 | --bg-fog-*-color | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization |
 
+### Country flags
+
+To properly display a country flag the template expects `COUNTRY` tag with
+two letter country code ([ISO 3166-1 alpha-2](https://www.iso.org/obp/ui/)).
+
+Three letter code, as well as official English country name and a few popular common
+names are translated to two letter standard on the fly, but if your case is not
+handled well, you can add it to [countries.js](countries.js).
+
 ## Acknowledgements
 
-This emplate uses the following open source components:
+This template uses the following open source components:
 
-* MIT licensed for effect from [tengbao/vanta](https://github.com/tengbao/vanta)
+* MIT licensed fog effect from [tengbao/vanta](https://github.com/tengbao/vanta)
 * MIT licensed three.js library from [mrdoob/three.js](https://github.com/mrdoob/three.js/)
 * MIT licensed svg flags from [lipis/flag-icons](https://github.com/lipis/flag-icons)
 

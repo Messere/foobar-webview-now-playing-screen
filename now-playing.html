@@ -353,13 +353,13 @@
 
         .country {
             height: 1.2em;
-            margin-left: 2px;
+            margin-right: 1em;
             vertical-align: text-bottom;
         }
 
         .year {
             font-weight: bold;
-            margin: 0 1em;
+            margin: 0 1em 0 2px;
         }
 
         /* metadata: technical details */
@@ -530,6 +530,7 @@
             </li>
         </ul>
     </div>
+    <script type="text/javascript" src="countries.js"></script>
     <script type="text/javascript">
         class ImageBgGenerator {
             getBg(img) {
@@ -785,20 +786,23 @@
                 this.artworkEls[0].addEventListener('load', this.setArtworkBg.bind(this));
                 this.statusEls.forEach(e => e.addEventListener('click', () => this.plugin.togglePause()));
 
-                this.refresh('init');
+                this.refresh();
                 this.status();
                 this.setArtwork();
             }
 
             refresh() {
-                const value = this._format('[%country%]').toUpperCase();
-                const country = value === 'UK' ? 'GB' : value;
-                this.flagEls.forEach(e => this._setOrHide(e, `flags/${country}.svg`, 'src', country))
-
                 this.formatEls.forEach(e => {
                     const value = this._format(e.dataset.format);
                     this._setOrHide(e, value, 'innerHTML', value, t => this.parens.mark(t));
                 });
+                this.setFlag();
+            }
+
+            setFlag() {
+                const country = countries[this._format('[%country%]').toLowerCase()] || '';
+
+                this.flagEls.forEach(e => this._setOrHide(e, `flags/${country}.svg`, 'src', country))
             }
 
             setArtwork() {
