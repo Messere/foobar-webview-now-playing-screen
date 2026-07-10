@@ -81,7 +81,7 @@ A section of configurable parameters is included at the top of the template file
 | --cover-stretch-threshold           | if cover width/hight ratio is smaller that this, cover is stretched                                                  |
 | --cover-generator-str-len           | number of characters that is taken to generate automatic cover art                                                   |
 | --cover-generator-char-scale-factor | ratio of the size between consecutive characters                                                                     |
-| --bg-for-enabled                    | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions) |
+| --bg-fog-enabled                    | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions) |
 | --bg-fog-*-color                    | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization |
 
 ### Country flags
