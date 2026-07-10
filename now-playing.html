@@ -9,6 +9,7 @@
             color-scheme: dark;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-variant: small-caps;
+            --alignment: flip; /* or left, or right */
             --flip-duration: 45s;
             --cd-spin-duration: 5s;
             --cd-hide-duration: 1.5s;
@@ -91,18 +92,26 @@
             margin-left: 0.5em;
         }
 
-        .container-ltr {
+        .alignment-flip .container-ltr {
             opacity: 1;
             animation-name: flipStart;
             animation-duration: var(--flip-duration);
             animation-iteration-count: infinite;
         }
 
-        .container-rtl {
+        .alignment-flip .container-rtl {
             opacity: 0;
             animation-name: flipEnd;
             animation-duration: var(--flip-duration);
             animation-iteration-count: infinite;
+        }
+
+        .alignment-left .container-rtl {
+            opacity: 0;
+        }
+
+        .alignment-right .container-ltr {
+            opacity: 0;
         }
 
         @keyframes flipStart {
@@ -862,7 +871,9 @@
                 this.statusEls.forEach(e => e.classList.remove(...e.classList));
                 this.statusEls.forEach(e => e.classList.add('status', ...status.split(' ')));
 
-                this.bodyEl.classList.remove(...this.bodyEl.classList);
+                let currentElements = [...this.bodyEl.classList];
+                currentElements = currentElements.filter(x => !x.startsWith('alignment-'));
+                this.bodyEl.classList.remove(...currentElements);
                 this.bodyEl.classList.add(...status.split(' '));
                 if (status === 'paused') {
                     this.bodyEl.classList.add('playing');
@@ -968,11 +979,13 @@
             });
         }
 
+        document.body.classList.add(`alignment-${getopt('--alignment')}`);
+
         const containerLtr = document.querySelector('.container');
         const containerRtl = containerLtr.cloneNode(true);
         containerLtr.parentElement.appendChild(containerRtl);
-        containerLtr.classList.add('container-ltr')
-        containerRtl.classList.add('container-rtl')
+        containerLtr.classList.add('container-ltr');
+        containerRtl.classList.add('container-rtl');
 
         const a = new NowPlayingScreen(chrome.webview.hostObjects.sync.foo_uie_webview);
 
