@@ -54,6 +54,7 @@ A section of configurable parameters is included at the top of the template file
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-variant: small-caps;
     --alignment: flip; /* flip, left, or right */
+    --inverse-layout: false;
     --default-time-display: elapsed; /* elapsed or remaining */
     --flip-duration: 45s;
     --cd-spin-duration: 5s;
@@ -71,22 +72,23 @@ A section of configurable parameters is included at the top of the template file
 }
 ```
 
-| option                              | information                                                                                                          |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| color-scheme                        | `dark` or `light`, can also be `dark light` for automatic selection according to your system settings                |
-| font-family                         | see [font-family CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-family)    |
-| font-variant                        | see [font-variant CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-variant)  |
-| --alignment                         | `left` for cover on left, meta on right, `right` for reverse, `flip` for animation between `left` and `right`        |
-| --default-time-display              | `elapsed` or `remaining` (note that `remaining` falls back to `elapsed` if total time is unknown, i.e. for streaming)  |
-| --flip-duration                     | time between information on screen flip from side to side                                                            |
-| --cd-spin-duration                  | the larger the value, the slower CD art spins while playing                                                          |
-| --cd-hide-duration                  | how quickly CD art shows/hides when starting/stopping playback                                                       |
-| --color-mute-factor                 | transparency of some text elements (i.e. text in parentheses)                                                        |
-| --cover-stretch-threshold           | if cover width/hight ratio is smaller that this, cover is stretched                                                  |
-| --cover-generator-str-len           | number of characters that is taken to generate automatic cover art                                                   |
-| --cover-generator-char-scale-factor | ratio of the size between consecutive characters                                                                     |
-| --bg-fog-enabled                    | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions) |
-| --bg-fog-*-color                    | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization |
+| option                              | information                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| color-scheme                        | `dark` or `light`, can also be `dark light` for automatic selection according to your system settings                 |
+| font-family                         | see [font-family CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-family)     |
+| font-variant                        | see [font-variant CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-variant)   |
+| --alignment                         | `left` for cover on left, meta on right, `right` for reverse, `flip` for animation between `left` and `right`         |
+| --inverse-layout                    | if `true` then cover art switches sides with metadata.                                                                |
+| --default-time-display              | `elapsed` or `remaining` (note that `remaining` falls back to `elapsed` if total time is unknown, i.e. for streaming) |
+| --flip-duration                     | time between information on screen flip from side to side                                                             |
+| --cd-spin-duration                  | the larger the value, the slower CD art spins while playing                                                           |
+| --cd-hide-duration                  | how quickly CD art shows/hides when starting/stopping playback                                                        |
+| --color-mute-factor                 | transparency of some text elements (i.e. text in parentheses)                                                         |
+| --cover-stretch-threshold           | if cover width/hight ratio is smaller that this, cover is stretched                                                   |
+| --cover-generator-str-len           | number of characters that is taken to generate automatic cover art                                                    |
+| --cover-generator-char-scale-factor | ratio of the size between consecutive characters                                                                      |
+| --bg-fog-enabled                    | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions)  |
+| --bg-fog-*-color                    | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
 
 ### Country flags
 

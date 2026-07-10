@@ -10,6 +10,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-variant: small-caps;
             --alignment: flip; /* flip, left, or right */
+            --inverse-layout: false;
             --default-time-display: elapsed; /* elapsed or remaining */
             --flip-duration: 45s;
             --cd-spin-duration: 5s;
@@ -113,6 +114,14 @@
 
         .alignment-right .container-ltr {
             opacity: 0;
+        }
+
+        .layout-variant-1 {
+            display: if(style(--inverse-layout: true): none; else: inherit);
+        }
+
+        .layout-variant-2 {
+            display: if(style(--inverse-layout: true): inherit; else: none);
         }
 
         @keyframes flipStart {
@@ -468,7 +477,7 @@
 
 <body>
     <div class="container">
-        <div class="side">
+        <div class="side layout-variant-1">
             <div class="artwork-wrap">
                 <div class="cdborder">
                     <img src="cd.png" class="cd" />
@@ -540,6 +549,15 @@
                 </span>
             </li>
         </ul>
+        <div class="side layout-variant-2">
+            <div class="artwork-wrap">
+                <div class="cdborder">
+                    <img src="cd.png" class="cd" />
+                    <img src="cd.png" class="cdbg" />
+                </div>
+                <img src="cd.png" class="artwork" />
+            </div>
+        </div>
     </div>
     <script type="text/javascript" src="countries.js"></script>
     <script type="text/javascript">
