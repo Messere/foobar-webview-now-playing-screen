@@ -117,10 +117,12 @@
         }
 
         .layout-variant-1 {
+            display: inherit;
             display: if(style(--inverse-layout: true): none; else: inherit);
         }
 
         .layout-variant-2 {
+            display: none;
             display: if(style(--inverse-layout: true): inherit; else: none);
         }
 
