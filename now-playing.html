@@ -25,6 +25,9 @@
             --bg-fog-midtone-color: #c03f26;
             --bg-fog-lowlight-color: #3e1010;
             --bg-fog-base-color: #a02424;
+            --vu-meter-enabled: true;
+            --vu-meter-color: red;
+            --vu-meter-font-color: white;
         }
 
         * {
@@ -117,12 +120,12 @@
         }
 
         .layout-variant-1 {
-            display: inherit;
+            display: inherit; /* older edge compatibility */
             display: if(style(--inverse-layout: true): none; else: inherit);
         }
 
         .layout-variant-2 {
-            display: none;
+            display: none;  /* older edge compatibility */
             display: if(style(--inverse-layout: true): inherit; else: none);
         }
 
@@ -414,7 +417,6 @@
 
         .time-container {
             display: block;
-            margin-top: 1em;
             font-size: 3em;
             cursor: pointer;
         }
@@ -473,6 +475,25 @@
             to {
                 background-color: rgba(0, 255, 0, var(--color-mute-factor));
             }
+        }
+
+        /* vu meter */
+        .vu-meters {
+            margin-top: 1em;
+        }
+
+        .vu-meter {
+            display: none;
+            width: 100%;
+            height: 0.5em;
+            line-height: 0.2em;
+            margin-bottom: 2px;
+            font-size: small;
+            border: 0;
+            padding: 2px;
+            letter-spacing: 1px;
+            border-radius: 0.2em;
+            color: var(--vu-meter-font-color);
         }
     </style>
 </head>
@@ -535,6 +556,26 @@
                     <span data-format="$channels()">Channels</span>
                     <span data-format="[%album dynamic range%]" data-prefix="dr">DR</span>
                 </span>
+                <div class="vu-meters">
+                    <div class="vu-meter vu-fl">fl</div>
+                    <div class="vu-meter vu-fr">fr</div>
+                    <div class="vu-meter vu-fc">fc</div>
+                    <div class="vu-meter vu-lfe">lfe</div>
+                    <div class="vu-meter vu-bl">bl</div>
+                    <div class="vu-meter vu-br">br</div>
+                    <div class="vu-meter vu-fcl">fcl</div>
+                    <div class="vu-meter vu-fcr">fcr</div>
+                    <div class="vu-meter vu-bc">bc</div>
+                    <div class="vu-meter vu-sl">sl</div>
+                    <div class="vu-meter vu-sr">sr</div>
+                    <div class="vu-meter vu-tc">tc</div>
+                    <div class="vu-meter vu-tfl">tfl</div>
+                    <div class="vu-meter vu-tfc">tfc</div>
+                    <div class="vu-meter vu-tfr">tfr</div>
+                    <div class="vu-meter vu-tbl">tbl</div>
+                    <div class="vu-meter vu-tbc">tbc</div>
+                    <div class="vu-meter vu-tbr">tbr</div>
+                </div>
                 <span class="time-container">
                     <span class="time">00:00</span><span class="total"
                         data-format="[%length%]">00:00</span>
@@ -980,6 +1021,120 @@
             }
         }
 
+        class LevelMeter {
+            constructor(plugin, isEnabled) {
+                this.isEnabled = isEnabled;
+                if (!this.isEnabled) {
+                    return;
+                }
+
+                this.plugin = plugin;
+                this.color = getopt('--vu-meter-color');
+
+                this.channelLabels = ["FL", "FR", "FC", "LFE", "BL", "BR", "FCL", "FCR", "BC", "SL", "SR", "TC", "TFL", "TFC", "TFR", "TBL", "TBC", "TBR"];
+
+                this.vuMeters = {};
+                this.channelLabels.forEach(l => {
+                    this.vuMeters[l] = document.querySelectorAll(`.vu-${l.toLowerCase()}`);
+                })
+
+                this.sharedBuffer = null;
+                this.samples = null;
+                this.sampleRate = null;
+                this.channelCount = 0;
+
+                this.updateIntervalMs = 50;
+                this.interval = setInterval(this.onTimer.bind(this), this.updateIntervalMs);
+
+                this.previousDb = {};
+            }
+
+            onSharedBufferReceived(e) {
+                if (this.sharedBuffer) {
+                    window.chrome.webview.releaseBuffer(this.sharedBuffer);
+                }
+
+                if (!e.additionalData) return;
+
+                this.previousDb = {};
+                this.sharedBuffer = e.getBuffer();
+                this.samples = new Float64Array(this.sharedBuffer);
+                this.sampleRate = e.additionalData.SampleRate;
+                this.channelCount = e.additionalData.ChannelCount;
+
+                let channelConfig = e.additionalData.ChannelConfig;
+                this.channelNames =  this.channelLabels.filter(x => {
+                    const b = (channelConfig & 1);
+                    channelConfig >>= 1;
+                    return b;
+                });
+
+                this.channelLabels.forEach(ch => this.vuMeters[ch].forEach(m => m.style.display='none'));
+                this.channelNames.forEach(ch => this.vuMeters[ch].forEach(m => m.style.display='block'));
+
+                if (this.inteval) {
+                    clearInterval(this.interval);
+                }
+                const windowSizeMs = Math.ceil(this.samples.length/this.channelCount/this.sampleRate*1000);
+                this.interval = setInterval(this.onTimer.bind(this), windowSizeMs);
+            }
+
+            onTimer() {
+                if (this.plugin.isPaused || !this.plugin.isPlaying || !this.samples) return;
+
+                let channelSquaresSum = [];
+
+                const sampleSize = this.samples.length / this.channelCount;
+                for (let i = 0; i < this.samples.length; i += this.channelCount) {
+                    for (let channel = 0; channel < this.channelCount; channel++) {
+                        const val = this.samples[i+channel];
+                        channelSquaresSum[channel] = (channelSquaresSum[channel] || 0) + val*val;
+                    }
+                }
+
+                let currentDb = {}
+                for (let channel = 0; channel < this.channelCount; channel++) {
+                    const channelName = this.channelNames[channel];
+                    const previousValue = this.previousDb[channelName] || -1;
+                    let currentValue = 20 * Math.log10(
+                        Math.sqrt(channelSquaresSum[channel] / sampleSize) || 0.00001
+                    );
+
+                    if (currentValue >= previousValue) {
+                        currentDb[channelName] = currentValue;
+                    } else {
+                        currentDb[channelName] = previousValue + (currentValue - previousValue) * 0.2;
+                    }
+
+                    const limitedValue = currentDb[channelName] < -60 ? -60 : currentDb[channelName];
+                    const meterValue = (60+limitedValue) * 10 / 6;
+
+                    this.vuMeters[channelName][0].style.background = this._fill(meterValue, 100, this.color, 'rgb(0,0,0,0)');
+                    this.vuMeters[channelName][1].style.background = this._fill(100-meterValue, 100, 'rgb(0,0,0,0)', this.color);
+                }
+
+                this.previousDb = currentDb;
+            }
+
+            onStop() {
+                this.previousDb = {};
+                this.channelLabels.forEach(ch => this.vuMeters[ch].forEach(m => m.style.background = 'rgb(0,0,0,0)'));
+            }
+
+            _fill(current, total, startColor, endColor) {
+                total = parseFloat(total);
+                if (!total) {
+                    return startColor;
+                }
+
+                const ratio = current / total;
+                return `linear-gradient(to right,
+                    ${startColor} calc(${100 * ratio}% + 1px),
+                    ${endColor} calc(${100 * ratio}%)
+                )`;
+            }
+        }
+
         const getopt = x => window.getComputedStyle(document.documentElement).getPropertyValue(x);
 
         if (getopt(`--bg-fog-enabled`) === 'true') {
@@ -1017,18 +1172,30 @@
         containerLtr.classList.add('container-ltr');
         containerRtl.classList.add('container-rtl');
 
-        const a = new NowPlayingScreen(chrome.webview.hostObjects.sync.foo_uie_webview);
+        const vuMeterEnabled = getopt('--vu-meter-enabled') === 'true';
+        const pm = new LevelMeter(
+            chrome.webview.hostObjects.sync.foo_uie_webview,
+            vuMeterEnabled,
+        );
+        if (vuMeterEnabled) {
+            window.chrome.webview.addEventListener("sharedbufferreceived", pm.onSharedBufferReceived.bind(pm));
+        }
 
+        const a = new NowPlayingScreen(chrome.webview.hostObjects.sync.foo_uie_webview);
         function onPlaybackEdited() { a.refresh() }
         function onPlaybackDynamicTrackInfo() { a.refresh(); a.setArtwork() }
         function onPlaybackDynamicInfo() { a.refresh() }
         function onPlaybackStarting(command, paused) { a.status(paused ? 'paused' : 'playing') }
-        function onPlaybackStop(reason) { a.status(`stopped by ${reason.toLowerCase()}`) }
+        function onPlaybackStop(reason) {
+            if (vuMeterEnabled) pm.onStop();
+            a.status(`stopped by ${reason.toLowerCase()}`)
+        }
         function onPlaybackPause(paused) { a.status(paused ? 'paused' : 'playing') }
         function onPlaybackStarted() { a.refresh() }
         function onPlaybackNewTrack() { a.refresh(); a.setArtwork() }
         function onPlaybackTime(s) { a.setTime(s) }
         function onPlaybackSeek(s) { a.setTime(s) }
+
     </script>
 </body>
 

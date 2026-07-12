@@ -29,6 +29,7 @@ this won't work if you have default artwork set in foobar2000).
 * Custom CD artwork is supported; if no CD artwork is availabe, substitute is
 generated based on main artwork (again - this works only if foobar2000 is not
 confugured to provide its own fallback artwork).
+* Multichannel VU-meter.
 * As it was meant as a non-interactive big screen display, there are only two
 interactive element: playback button toggles between pause and play on click and
 time display toggles between elapsed and remaining time on click (but only if
@@ -69,6 +70,9 @@ A section of configurable parameters is included at the top of the template file
     --bg-fog-midtone-color: #c03f26;
     --bg-fog-lowlight-color: #3e1010;
     --bg-fog-base-color: #a02424;
+    --vu-meter-enabled: true;
+    --vu-meter-color: red;
+    --vu-meter-font-color: white;
 }
 ```
 
@@ -89,6 +93,9 @@ A section of configurable parameters is included at the top of the template file
 | --cover-generator-char-scale-factor | ratio of the size between consecutive characters                                                                      |
 | --bg-fog-enabled                    | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions)  |
 | --bg-fog-*-color                    | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
+| --vu-meter-enabled                  | show (`true`) or hide (`false`) the vu-meter                                                                          |
+| --vu-meter-color                    | color of the vu-meter                                                                                                 |
+| --vu-meter-font-color               | color of the vu-meter text (channel symbol)                                                                           |
 
 ### Country flags
 
