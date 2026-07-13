@@ -1,0 +1,104 @@
+{
+    "colorScheme": "dark",
+    "fontFamily": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    "fontVariant": "small-caps",
+    "colorMuteFactor": 0.3,
+
+    "alignment": "flip",
+    "inverseLayout": false,
+    "flipDuration": "45s",
+
+    "defaultTimeDisplay": "elapsed",
+
+    "coverStretchThreshold": 0.10,
+    "coverGeneratorStrLen": 5,
+    "coverGeneratorCharScaleFactor": 0.7,
+    "cdSpinDuration": "5s",
+    "cdHideDuration": "1.5s",
+
+    "bgStaticColor": "Canvas",
+
+    "bgFogEnabled": true,
+    "bgFogHighlightColor": "#310c1d",
+    "bgFogMidtoneColor": "#c03f26",
+    "bgFogLowlightColor": "#3e1010",
+    "bgFogBaseColor": "#a02424",
+
+    "vuMeterEnabled": true,
+    "vuMeterColor": "red",
+    "vuMeterFontColor": "white",
+
+    "countryMappings": {
+        "uk": "GB",
+        "united kingdom": "GB",
+        "england": "GB",
+        "united states": "US",
+        "venezuela": "VE",
+        "north korea": "KP",
+        "south korea": "KR",
+        "korea": "KR",
+        "iran": "IR",
+        "russia": "RU"
+    },
+
+    "formatArtist": "[%album artist%]",
+    "formatAlbum": "[%album%]",
+    "formatSection": "[%subtitle%]",
+    "formatTitle": "[%title%]",
+
+    "formatDate": "[%date%]",
+    "formatKeywords": "[$meta_sep(genre,' ᛫ ')]",
+    "formatCountry": "[%country%]",
+
+    "formatDetails": [
+        {
+            "title": "performed by: ",
+            "format": "[$if($stricmp(%track artist%,%album artist%),,%track artist%)]"
+        },
+        {
+            "title": "composed by: ",
+             "format":  "[%composer%]"
+        },
+        {
+            "title": "conducted by: ",
+             "format":  "[%conductor%]"
+        },
+        {
+            "title": "venue: ",
+             "format":  "[%venue%]"
+        },
+        {
+            "title": "stream URL: ",
+             "format":  "[$if($and($or($stricmp($left(%path%,8),'https://'),$stricmp($left(%path%,7),'http://')),$not($stricmp(%filename_ext%,'stream.flac.ogg'))),%path%,)]"
+        },
+        {
+            "title": "URL: ",
+            "format":  "[%url%]"
+        }
+    ],
+
+    "formatChips": [
+        {
+            "format": "[%codec_long%]"
+        },
+        {
+            "format": "[%bitrate%]",
+             "suffix": "kb/s"
+        },
+        {
+            "format": "[$puts(sr,$info(samplerate))$puts(sr1000,$div($get(sr),1000))$puts(r,$div($sub($get(sr),$mul($get(sr1000),1000)),100))$get(sr1000)$ifequal($get(r),0,,.$get(r))]",
+             "suffix": "kHz"
+        },
+        {
+            "format": "[%__bitspersample%]",
+             "suffix": "bit"
+        },
+        {
+            "format": "$channels()"
+        },
+        {
+            "format": "[%album dynamic range%]",
+             "prefix": "dr"
+        }
+    ]
+}

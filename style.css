@@ -1,0 +1,498 @@
+:root {
+    color-scheme: dark;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-variant: small-caps;
+    --inverse-layout: false;
+    --flip-duration: 45s;
+    --cd-spin-duration: 5s;
+    --cd-hide-duration: 1.5s;
+    --color-mute-factor: 0.3;
+    --bg-static-color: Canvas;
+    --vu-meter-font-color: white;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    overflow-wrap: anywhere
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg-static-color);
+}
+
+li {
+    list-style: none;
+}
+
+.hide {
+    display: none !important;
+}
+
+
+i.plain,
+i.paren,
+i.bracket,
+i.brace,
+i.angle {
+    font-style: normal;
+}
+
+i.paren,
+i.bracket,
+i.brace,
+i.angle {
+    opacity: var(--color-mute-factor);
+}
+
+/* wrapper and flip animations */
+
+.container {
+    margin: auto;
+    height: 100%;
+    width: 94%;
+    margin-left: 3%;
+    display: flex;
+    position: absolute;
+    justify-content: left;
+    align-items: center;
+    flex-direction: row;
+}
+
+.container-rtl {
+    justify-content: right;
+    text-align: right;
+    flex-direction: row-reverse;
+}
+
+.container-rtl .country {
+    margin-left: 0.5em;
+}
+
+.alignment-flip .container-ltr {
+    opacity: 1;
+    animation-name: flipStart;
+    animation-duration: var(--flip-duration);
+    animation-iteration-count: infinite;
+}
+
+.alignment-flip .container-rtl {
+    opacity: 0;
+    animation-name: flipEnd;
+    animation-duration: var(--flip-duration);
+    animation-iteration-count: infinite;
+}
+
+.alignment-left .container-rtl {
+    opacity: 0;
+}
+
+.alignment-right .container-ltr {
+    opacity: 0;
+}
+
+.layout-variant-1 {
+    display: inherit; /* older edge compatibility */
+    display: if(style(--inverse-layout: true): none; else: inherit);
+}
+
+.layout-variant-2 {
+    display: none;  /* older edge compatibility */
+    display: if(style(--inverse-layout: true): inherit; else: none);
+}
+
+@keyframes flipStart {
+
+    0%,
+    45%,
+    100% {
+        opacity: 1;
+        transform: rotateY(0);
+    }
+
+    50%,
+    95% {
+        opacity: 0;
+        transform: rotateY(180deg);
+    }
+}
+
+@keyframes flipEnd {
+
+    0%,
+    45%,
+    100% {
+        opacity: 0;
+        transform: rotateY(180deg);
+    }
+
+    50%,
+    95% {
+        opacity: 1;
+        transform: rotateY(0);
+    }
+}
+
+
+/* artwork */
+
+.side {
+    width: 120%;
+}
+
+.side img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.artwork-wrap {
+    padding-left: 30%;
+    padding-right: 1em;
+}
+
+.container-rtl .artwork-wrap {
+    padding-right: 30%;
+    padding-left: 1em;
+}
+
+.artwork {
+    box-shadow: 0 0 0.1em 0.1em ButtonBorder;
+    margin-top: -100%;
+    z-index: 20;
+    position: relative;
+    object-fit: contain;
+    aspect-ratio: 1 / 1;
+    background-color: ButtonBorder;
+}
+
+.side img.stretched {
+    object-fit: fill;
+}
+
+.cdbg {
+    object-fit: cover;
+    margin-top: -100%;
+    opacity: 20%;
+    z-index: 11;
+}
+
+.cd,
+.cdbg {
+    animation: spin var(--cd-spin-duration) linear infinite;
+    animation-play-state: paused;
+    z-index: 10;
+    object-fit: cover;
+    clip-path: circle(50%);
+    aspect-ratio: 1 / 1;
+}
+
+.playing .cd,
+.playing .cdbg {
+    animation-play-state: running;
+}
+
+.paused .cd,
+.paused .cdbg {
+    animation-play-state: paused;
+}
+
+.cdborder {
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    background-color: ButtonBorder;
+    clip-path: circle(50%);
+    padding: 0.1em;
+    box-sizing: border-box;
+}
+
+.stopped .container-ltr .cdborder {
+    animation: var(--cd-hide-duration) 1 hide-ltr ease;
+    animation-fill-mode: forwards;
+}
+
+.playing .container-ltr .cdborder {
+    animation: var(--cd-hide-duration) 1 show-ltr ease;
+    animation-fill-mode: forwards;
+}
+
+.stopped .container-rtl .cdborder {
+    animation: var(--cd-hide-duration) 1 hide-rtl ease;
+    animation-fill-mode: forwards;
+}
+
+.playing .container-rtl .cdborder {
+    animation: var(--cd-hide-duration) 1 show-rtl ease;
+    animation-fill-mode: forwards;
+}
+
+.paused .container-ltr .cdborder {
+    margin-left: -40%;
+}
+
+.paused .container-rtl .cdborder {
+    margin-left: 40%;
+}
+
+@keyframes hide-ltr {
+    from {
+        margin-left: -40%;
+    }
+
+    to {
+        margin-left: 0;
+    }
+}
+
+@keyframes show-ltr {
+    from {
+        margin-left: initial;
+    }
+
+    to {
+        margin-left: -40%;
+    }
+}
+
+@keyframes hide-rtl {
+    from {
+        margin-left: 40%;
+    }
+
+    to {
+        margin-left: 0;
+    }
+}
+
+@keyframes show-rtl {
+    from {
+        margin-left: initial;
+    }
+
+    to {
+        margin-left: 40%;
+    }
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* metadata */
+
+.meta-container {
+    width: 80%;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+/* metadata: artist, albim, title */
+
+.artist {
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.album {
+    display: block;
+    font-size: large;
+    font-weight: 500;
+    margin-bottom: 1em;
+}
+
+.album::after {
+    content: '»';
+}
+
+.album::before {
+    content: '«';
+}
+
+.section {
+    display: block;
+    font-size: large;
+    font-weight: 100;
+    line-height: 1.1em;
+}
+
+.title {
+    display: block;
+    font-size: xx-large;
+    font-weight: 500;
+    line-height: 1.1em;
+    margin-bottom: 0.5em;
+}
+
+/* metadata: detail wrapper */
+
+.meta-detail {
+    font-weight: 500;
+    font-size: small;
+    letter-spacing: 0.15em;
+}
+
+.meta-detail::before {
+    content: attr(data-prefix);
+    font-weight: 100;
+    letter-spacing: 0.3em;
+}
+
+/* metadata: country, year, keywords */
+
+.meta {
+    letter-spacing: 0.3em;
+    margin-top: 2em;
+}
+
+.country {
+    height: 1.2em;
+    vertical-align: text-bottom;
+    margin: 0 1em 0 2px;
+}
+
+.year {
+    font-weight: bold;
+    margin: 0 1em 0 0;
+}
+
+
+.container-rtl .country {
+    margin: 0;
+}
+
+.container-rtl .year {
+    margin: 0 0 0 1em;
+}
+
+.container-rtl .keywords {
+    margin: 0 0 0 1em;
+}
+
+/* metadata: technical details */
+
+.technical {
+    display: inline-block;
+    width: fit-content;
+    margin-top: 1em;
+    font-size: small;
+}
+
+.technical span {
+    display: inline-block;
+    background-color: rgb(from ButtonBorder r g b / var(--color-mute-factor));
+    padding: 0.5em 0.5em 0.5em 0.75em;
+    border-radius: 0.5em;
+    margin-bottom: 0.5em;
+    margin-right: 0.5em;
+    margin-left: 0;
+}
+
+.container-rtl .technical span {
+    margin-left: 0.5em;
+    margin-right: 0;
+}
+
+/* metadata: time, total time */
+
+.technical span::after {
+    content: attr(data-suffix);
+    opacity: calc(2*var(--color-mute-factor));
+}
+
+.technical span::before {
+    content: attr(data-prefix);
+    opacity: calc(2*var(--color-mute-factor));
+}
+
+.time-container {
+    display: block;
+    font-size: 3em;
+    cursor: pointer;
+}
+
+.total {
+    opacity: var(--color-mute-factor);
+}
+
+.total::before {
+    content: '/';
+    alignment-baseline: central;
+}
+
+/* playback status */
+
+.status {
+    display: inline-block;
+    background-color: rgb(from ButtonBorder r g b / var(--color-mute-factor));
+    padding: 0.5em 0.5em 0.5em 0.75em;
+    border-radius: 0.5em;
+    cursor: pointer;
+    margin-top: 0.5em;
+}
+
+.playing .status {
+    background-color: rgba(0, 255, 0, var(--color-mute-factor));
+}
+
+.playing .status::before {
+    content: '▶ ';
+}
+
+.stopped .status {
+    background-color: rgba(255, 0, 0, var(--color-mute-factor));
+}
+
+.stopped .status::before {
+    content: '⏹ ';
+}
+
+.stopped .status-track {
+    display: none;
+}
+
+.paused .status {
+    background-color: rgb(from ButtonBorder r g b / var(--color-mute-factor));
+    animation: pause 0.6s infinite linear;
+    animation-direction: alternate;
+}
+
+.paused .status::before {
+    content: '⏸ ';
+}
+
+@keyframes pause {
+    to {
+        background-color: rgba(0, 255, 0, var(--color-mute-factor));
+    }
+}
+
+/* vu meter */
+.vu-meters {
+    margin-top: 1em;
+}
+
+.vu-meter {
+    display: none;
+    width: 100%;
+    height: 0.5em;
+    line-height: 0.2em;
+    margin-bottom: 2px;
+    font-size: small;
+    border: 0;
+    padding: 2px;
+    letter-spacing: 1px;
+    border-radius: 0.2em;
+    color: var(--vu-meter-font-color);
+}

@@ -34,77 +34,92 @@ confugured to provide its own fallback artwork).
 interactive element: playback button toggles between pause and play on click and
 time display toggles between elapsed and remaining time on click (but only if
 remaining time is known).
-* Simple customization: edit the template and add your own elements. A dedicated
-attribute `data-format` accepts foobar2000 formatting script and displays/updates
-it automatically. For example:
-    ```html
-    <span data-format="[%album artist%]"></span>
-    ```
-    will display and update `album artist` information from foobar2000. No JavaScript
-    modifications required.
+* Almost all information on screen is configurable using foobar2000 formatting scripts.
 
 ## Configuration
 
-A section of configurable parameters is included at the top of the template file in
-`:root` CSS element:
+Copy [config.dist.json](config.dist.json) to file named `config.json`, and locate in the same directory as the main template. Wdit it to customize your screen.
 
-```css
-:root {
-    /* configurable options */
-    color-scheme: dark;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-variant: small-caps;
-    --alignment: flip; /* flip, left, or right */
-    --inverse-layout: false;
-    --default-time-display: elapsed; /* elapsed or remaining */
-    --flip-duration: 45s;
-    --cd-spin-duration: 5s;
-    --cd-hide-duration: 1.5s;
-    --color-mute-factor: 0.3;
-    --cover-stretch-threshold: 0.10;
-    --cover-generator-str-len: 5;
-    --cover-generator-char-scale-factor: 0.7;
-    --bg-static-color: Canvas;
-    --bg-fog-enabled: true;
-    --bg-fog-highlight-color: #310c1d;
-    --bg-fog-midtone-color: #c03f26;
-    --bg-fog-lowlight-color: #3e1010;
-    --bg-fog-base-color: #a02424;
-    --vu-meter-enabled: true;
-    --vu-meter-color: red;
-    --vu-meter-font-color: white;
-}
-```
+The following options can be used. All values are optional, if you don't have a `config.json` file or remove some values from it, defaults will be used.
 
-| option                              | information                                                                                                           |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| color-scheme                        | `dark` or `light`, can also be `dark light` for automatic selection according to your system settings                 |
-| font-family                         | see [font-family CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-family)     |
-| font-variant                        | see [font-variant CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-variant)   |
-| --alignment                         | `left` for cover on left, meta on right, `right` for reverse, `flip` for animation between `left` and `right`         |
-| --inverse-layout                    | if `true` then cover art switches sides with metadata.                                                                |
-| --default-time-display              | `elapsed` or `remaining` (note that `remaining` falls back to `elapsed` if total time is unknown, i.e. for streaming) |
-| --flip-duration                     | time between information on screen flip from side to side                                                             |
-| --cd-spin-duration                  | the larger the value, the slower CD art spins while playing                                                           |
-| --cd-hide-duration                  | how quickly CD art shows/hides when starting/stopping playback                                                        |
-| --color-mute-factor                 | transparency of some text elements (i.e. text in parentheses)                                                         |
-| --cover-stretch-threshold           | if cover width/hight ratio is smaller that this, cover is stretched                                                   |
-| --cover-generator-str-len           | number of characters that is taken to generate automatic cover art                                                    |
-| --cover-generator-char-scale-factor | ratio of the size between consecutive characters                                                                      |
-| --bg-fog-enabled                    | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions)  |
-| --bg-fog-*-color                    | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
-| --vu-meter-enabled                  | show (`true`) or hide (`false`) the vu-meter                                                                          |
-| --vu-meter-color                    | color of the vu-meter                                                                                                 |
-| --vu-meter-font-color               | color of the vu-meter text (channel symbol)                                                                           |
+| option                        | information                                                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| colorScheme                   | `dark` or `light`, can also be `dark light` for automatic selection according to your system settings                 |
+| fontFamily                    | see [font-family CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-family)     |
+| fontVariant                   | see [font-variant CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-variant)   |
+| colorMuteFactor               | transparency of some text elements (i.e. text in parentheses)                                                         |
+| alignment                     | `left` for cover on left, meta on right, `right` for reverse, `flip` for animation between `left` and `right`         |
+| inverseLayout                 | if `true` then cover art switches sides with metadata.                                                                |
+| flipDuration                  | time between information on screen flip from side to side                                                             |
+| defaultTimeDisplay            | `elapsed` or `remaining` (note that `remaining` falls back to `elapsed` if total time is unknown, i.e. for streaming) |
+| coverStretchThreshold         | if cover width/hight ratio is smaller that this, cover is stretched                                                   |
+| coverGeneratorStrLen          | number of characters that is taken to generate automatic cover art                                                    |
+| coverGeneratorCharScaleFactor | ratio of the size between consecutive characters                                                                      |
+| cdSpinDuration                | the larger the value, the slower CD art spins while playing                                                           |
+| cdHideDuration                | how quickly CD art shows/hides when starting/stopping playback                                                        |
+| bgStaticColor                 | static background color (when fog effect is disabled)                                                                 |
+| bgFogEnabled                  | enable (`true`) or disable (`false`) background fog (can be GPU intensive on slower machines and higher resolutions)  |
+| bgFogHighlightColor           | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
+| bgFogMidtoneghtColor          | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
+| bgFogLowlightColor            | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
+| bgFogBaseColor                | colors of the fog, see [Vanta.js fog](https://www.vantajs.com/?effect=fog) for details and interactive customization  |
+| vuMeterEnabled                | show (`true`) or hide (`false`) the vu-meter                                                                          |
+| vuMeterColor                  | color of the vu-meter                                                                                                 |
+| vuMeterFontColor              | color of the vu-meter text (channel symbol)                                                                           |
+| countryMappings               | map of country name (lowercase) to two letter country code, used as additional mappings for displaying country flag   |
+| formatArtist                  | format used to display artist                                                                                         |
+| formatAlbum                   | format used to display album title                                                                                    |
+| formatSection                 | format used to display additional subtitle / section (empty by default)                                               |
+| formatTitle                   | format used to display track title                                                                                    |
+| formatDate                    | format used to display release date                                                                                   |
+| formatKeywords                | format used to display keywords (like genre, etc.)                                                                    |
+| formatCountry                 | format used to display country flag                                                                                   |
+| formatDetails                 | list of formats used to display track details (see below)                                                             |
+| formatChips                   | list of formats used to display technical info about the track (see below)                                            |
+
+![explanation of format* options](format.png)
 
 ### Country flags
 
-To properly display a country flag, the template expects `COUNTRY` tag with
+To properly display a country flag, the template expects `COUNTRY` tag
+(or whatever tag you configure using `formatCountry` option) with
 two letter country code ([ISO 3166-1 alpha-2](https://www.iso.org/obp/ui/)).
 
 Three-letter codes, as well as official English country names and a few popular common
 names, are translated to two-letter standard on the fly.
 If your case is not handled well, you can add it to [countries.js](countries.js).
+
+### formatDetails
+
+This option defines a section with various details. Each element consists of detail `title` as well as `format` used to obtain it.
+
+For example:
+
+```json
+"formatDetails": [
+    {"title": "venue: ", "format": "[%venue%]"}
+]
+```
+
+Note that if you add this config option you'll overwrite all information configured
+by default, so rather edit default values that start from scratch.
+
+### formatChips
+
+This option defines a section with short technical details. Each element consists of
+`format` used to obtain the value and optional `suffix` and `prefix` that can be
+used to add unit, etc.
+
+For example:
+
+```json
+"formatChips": [
+    {"format": "[%bitrate%]", "suffix": "kbps" },
+    {"format": "[%album dynamic range%]", "prefix": "DR" }
+]
+```
+
+Again you can only edit this option as a whole, your value will overwrite defaults.
 
 ## Acknowledgements
 

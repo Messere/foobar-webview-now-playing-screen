@@ -1,4 +1,4 @@
-const countries = {
+let countries = {
 	"afghanistan": "AF",
 	af: "AF",
 	afg: "AF",
@@ -746,15 +746,4 @@ const countries = {
 	"zimbabwe": "ZW",
 	zw: "ZW",
 	zwe: "ZW",
-
-    // a few special cases, add your own if you need to
-    uk: "GB",
-    "united kingdom": "GB",
-    england: "GB",
-    "united states": "US",
-	"venezuela": "VE",
-	"north korea": "KP",
-	"south korea": "KR",
-    "korea": "KR",
-	"iran": "IR",
 };
