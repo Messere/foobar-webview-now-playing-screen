@@ -37,6 +37,10 @@ class NowPlayingScreen {
             e => e.addEventListener('click', () => this.toggleTimeFormat())
         )
 
+        if ("toggleFullScreen" in this.plugin) {
+            this.bodyEl.addEventListener('doubleclick', () => this.plugin.toggleFullScreen());
+        }
+
         this.refresh();
         this.setTime();
         this.status();

@@ -172,15 +172,6 @@
             containerLtr.classList.add('container-ltr');
             containerRtl.classList.add('container-rtl');
 
-            const vu = new VUMeter(
-                chrome.webview.hostObjects.sync.foo_uie_webview,
-                config.vuMeterEnabled,
-                config.vuMeterColor,
-            );
-            if (config.vuMeterEnabled) {
-                window.chrome.webview.addEventListener("sharedbufferreceived", vu.onSharedBufferReceived.bind(vu));
-            }
-
             const a = new NowPlayingScreen(
                 chrome.webview.hostObjects.sync.foo_uie_webview,
                 config.coverStretchThreshold,
@@ -194,15 +185,29 @@
             window.onPlaybackDynamicTrackInfo = () => { a.refresh(); a.setArtwork() }
             window.onPlaybackDynamicInfo = () => { a.refresh() }
             window.onPlaybackStarting = (command, paused) => { a.status(paused ? 'paused' : 'playing') }
-            window.onPlaybackStop = (reason) => {
-                if (config.vuMeterEnabled) vu.onStop();
-                a.status(`stopped by ${reason.toLowerCase()}`);
-            }
             window.onPlaybackPause = (paused) => { a.status(paused ? 'paused' : 'playing') }
             window.onPlaybackStarted = () => { a.refresh() }
             window.onPlaybackNewTrack = () => { a.refresh(); a.setArtwork() }
             window.onPlaybackTime = (s) => { a.setTime(s) }
             window.onPlaybackSeek = (s) => { a.setTime(s) }
+
+            const vu = new VUMeter(
+                chrome.webview.hostObjects.sync.foo_uie_webview,
+                config.vuMeterEnabled,
+                config.vuMeterColor,
+            );
+            window.onPlaybackStop = (reason) => {
+                if (config.vuMeterEnabled) vu.onStop();
+                a.status(`stopped by ${reason.toLowerCase()}`);
+            }
+
+            if (config.vuMeterEnabled) {
+                window.chrome.webview.addEventListener("sharedbufferreceived", vu.onSharedBufferReceived.bind(vu));
+
+                if ("requestSharedBuffer" in chrome.webview.hostObjects.sync.foo_uie_webview) {
+                    chrome.webview.hostObjects.sync.foo_uie_webview.requestSharedBuffer();
+                }
+            }
         }
 
         const defaultConfig = {
@@ -262,8 +267,6 @@
 
         fetch('./config.json', {cache: "no-store"}).then(
             r => r.json()
-        ).then(
-            config => main(Object.assign({}, defaultConfig, config))
         ).catch(
             (e) => {
                 if (e.message !== 'Failed to fetch') {
@@ -271,6 +274,8 @@
                 }
                 main(defaultConfig)
             }
+        ).then(
+            config => main(Object.assign({}, defaultConfig, config))
         )
 
 </script>
