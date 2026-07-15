@@ -52,6 +52,10 @@
 
     "formatDetails": [
         {
+            "title": "rating: ",
+            "format": "$if(%rating%,$repeat(★,%rating%)$repeat(✩,$sub(5,%rating%)),)"
+        },
+        {
             "title": "performed by: ",
             "format": "[$if($stricmp(%track artist%,%album artist%),,%track artist%)]"
         },

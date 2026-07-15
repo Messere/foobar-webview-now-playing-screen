@@ -87,6 +87,8 @@
     <script type="text/javascript" src="js/now-playing-screen.js"></script>
     <script type="text/javascript">
         let main = (config) => {
+            console.log(config);
+
             const cssConfigKeys = {
                 colorScheme: 'color-scheme',
                 fontFamily: 'font-family',
@@ -247,6 +249,7 @@
             formatCountry: "[%country%]",
 
             formatDetails: [
+                {title: 'rating: ', format: "$if(%rating%,$repeat(★,%rating%)$repeat(✩,$sub(5,%rating%)),)"},
                 {title: 'performed by: ', format: "[$if($stricmp(%track artist%,%album artist%),,%track artist%)]"},
                 {title: 'composed by: ', format: "[%composer%]"},
                 {title: "conducted by: ", format: "[%conductor%]"},
