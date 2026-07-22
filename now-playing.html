@@ -204,8 +204,10 @@
             if (config.vuMeterEnabled) {
                 window.chrome.webview.addEventListener("sharedbufferreceived", vu.onSharedBufferReceived.bind(vu));
 
-                if ("requestSharedBuffer" in chrome.webview.hostObjects.sync.foo_uie_webview) {
+                try {
                     chrome.webview.hostObjects.sync.foo_uie_webview.requestSharedBuffer();
+                } catch (e) {
+                    console.log('requestSharedBuffer not supported, consider upgrading plugin.');
                 }
             }
         }
